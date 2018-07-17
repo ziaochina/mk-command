@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
-const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
 
@@ -11,32 +11,27 @@ const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
 const getClientEnvironment = require('./env');
 const paths = require('./paths');
 
-const env = getClientEnvironment(publicUrl);
+const env = getClientEnvironment();
 const appPackageJson = require(paths.appPackageJson);
 const appDirectory = fs.realpathSync(process.cwd());
-
 module.exports = {
-    devtool: 'cheap-module-source-map',
-    mode: env || 'development',
+    mode: 'production',
     optimization: {
-        minimizer: env === 'production' ? [
+        minimizer: [
             new UglifyJsPlugin({
                 cache: true,
                 parallel: true,
                 sourceMap: false
             }),
             new OptimizeCSSAssetsPlugin({})
-        ] : []
+        ]
     },
-    plugins: [
-        new MiniCssExtractPlugin({ filename:  appPackageJson.name + '.css' })
-    ],
     entry: [
         paths.appIndexJs
     ],
     output: {
-        filename: appPackageJson.name + '.js',
-        path: path.join(appDirectory, "/dist/"),
+        filename: appPackageJson.name + '.min.js',
+        path: path.join(appDirectory, "/build/prod/"),
         library: "MKApp_" + appPackageJson.name.replace(/-/g, '_'),
         libraryTarget: "umd"
     },
@@ -92,11 +87,24 @@ module.exports = {
         "mk-aar-grid": "mk-aar-grid"
     },
     module: {
-        mode: env.stringified.NODE_ENV,
         rules: [{
-            test: /\.js?$/,
-            exclude: /node_modules/,
-            use: 'babel-loader'
+            test: /\.(js|jsx|mjs)$/,
+            include: paths.appSrc,
+            loader: require.resolve('babel-loader'),
+            options: {
+                babelrc: false,
+                presets: [
+                    'env',
+                    'stage-0',
+                    'react',
+                ],
+                plugins: [
+                    'transform-runtime',
+                    'add-module-exports',
+                    'transform-decorators-legacy'
+                ],
+                compact: true,
+            },
         }, {
             test: /\.css$/,
             use: [MiniCssExtractPlugin.loader, 'css-loader']
@@ -117,10 +125,9 @@ module.exports = {
     },
     plugins: [
         new webpack.DefinePlugin(env.stringified),
-        new webpack.HotModuleReplacementPlugin(),
         //大小写匹配
         new CaseSensitivePathsPlugin(),
-        new WatchMissingNodeModulesPlugin(paths.appNodeModules),
+        new MiniCssExtractPlugin({ filename: appPackageJson.name + '.min.css' })
     ],
     node: {
         dgram: 'empty',

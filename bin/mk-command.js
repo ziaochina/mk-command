@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict';
 
 const spawn = require('react-dev-utils/crossSpawn');
@@ -11,6 +12,9 @@ const nodeArgs = scriptIndex > 0 ? args.slice(0, scriptIndex) : [];
 
 switch (script) {
     case 'build':
+    case 'build-dev':
+    case 'pkg':
+    case 'pkg-dev':
     case 'start': {
         const result = spawn.sync(
             'node',

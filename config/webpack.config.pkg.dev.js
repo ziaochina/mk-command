@@ -13,7 +13,6 @@ const appPackageJson = require(paths.appPackageJson);
 const appDirectory = fs.realpathSync(process.cwd());
 module.exports = {
     mode: 'production',
-    devtool: 'cheap-module-source-map',
     optimization: {
         minimizer: []
     },
@@ -22,7 +21,7 @@ module.exports = {
     ],
     output: {
         filename: appPackageJson.name + '.js',
-        path: path.join(appDirectory, "/build/dev/"),
+        path: path.join(appDirectory, "/build/pkg-dev/"),
         library: "MKApp_" + appPackageJson.name.replace(/-/g, '_'),
         libraryTarget: "umd"
     },
