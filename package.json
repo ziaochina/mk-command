@@ -1,6 +1,6 @@
 {
   "name": "mk-command",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "mk脚手架",
   "license": "MIT",
   "bin": {
@@ -10,6 +10,7 @@
     "node": ">=6"
   },
   "dependencies": {
+    "art-template": "^4.12.2",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-plugin-add-module-exports": "^0.2.1",
@@ -37,7 +38,6 @@
     "react-dom": "^16.4.1",
     "resolve": "^1.8.1",
     "style-loader": "^0.21.0",
-    "template_js": "^0.7.1-1",
     "uglifyjs-webpack-plugin": "^1.2.7",
     "url-loader": "^1.0.1",
     "webpack": "^4.16.0",
