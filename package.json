@@ -1,6 +1,6 @@
 {
   "name": "mk-command",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "description": "mk脚手架",
   "license": "MIT",
   "bin": {
@@ -20,6 +20,7 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-react-app": "^3.1.1",
     "babel-preset-stage-0": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
     "babel-runtime": "^6.26.0",
     "case-sensitive-paths-webpack-plugin": "^2.1.2",
     "chalk": "^2.4.1",
