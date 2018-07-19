@@ -80,16 +80,22 @@ module.exports = {
         rules: [{
             test: /\.(js|jsx|mjs)$/,
             include: paths.appSrc,
+            exclude: paths.appNodeModules,
             loader: require.resolve('babel-loader'),
             options: {
                 babelrc: false,
                 presets: [
                     'env',
-                    'stage-0',
+                    'stage-2',
                     'react',
                 ],
                 plugins: [
-                    'transform-runtime',
+                    ["transform-runtime", {
+                        "helpers": false,
+                        "polyfill": false,
+                        "regenerator": true,
+                        "moduleName": "babel-runtime"
+                    }],
                     'add-module-exports',
                     'transform-decorators-legacy'
                 ],

@@ -5,9 +5,10 @@ const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMi
 const ignoredFiles = require('react-dev-utils/ignoredFiles');
 const config = require('./webpack.config.dev');
 const paths = require('./paths');
-
-const protocol = process.env.HTTPS === 'true' ? 'https' : 'http';
-const host = process.env.HOST || '0.0.0.0';
+const appJson = require(paths.appPackageJson);
+const serverOption = appJson.serverOption
+const protocol = serverOption.https === 'true' ? 'https' : 'http';
+const host = serverOption.host || '0.0.0.0';
 
 module.exports = function(proxy, allowedHost) {
   return {

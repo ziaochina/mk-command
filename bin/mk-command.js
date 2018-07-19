@@ -1,40 +1,91 @@
 #!/usr/bin/env node
 'use strict';
 
-const spawn = require('react-dev-utils/crossSpawn');
-const args = process.argv.slice(2);
+var chalk = require('chalk');
 
-const scriptIndex = args.findIndex(
-    x => x === 'build' || x === 'start'
-);
-const script = scriptIndex === -1 ? args[0] : args[scriptIndex];
-const nodeArgs = scriptIndex > 0 ? args.slice(0, scriptIndex) : [];
+var currentNodeVersion = process.versions.node;
+var semver = currentNodeVersion.split('.');
+var major = semver[0];
 
-switch (script) {
-    case 'build':
-    case 'build-dev':
-    case 'pkg':
-    case 'pkg-dev':
-    case 'start': {
-        const result = spawn.sync(
-            'node',
-            nodeArgs
-                .concat(require.resolve('../scripts/' + script))
-                .concat(args.slice(scriptIndex + 1)),
-            { stdio: 'inherit' }
-        );
-        if (result.signal) {
-            if (result.signal === 'SIGKILL') {
-                console.log("构建失败，内存溢出或者进程太早退出导致，使用 kill -9 删除进程");
-            } else if (result.signal === 'SIGTERM') {
-                console.log('构建失败，进程太早退出，可能有人调用kill 或者killall或者系统关闭. ');
-            }
-            process.exit(1);
+if (major < 4) {
+  console.error(
+    chalk.red(
+      '您当前的node版本是 ' +
+        currentNodeVersion +
+        '.\n' +
+        'mk依赖>=4的版本. \n' +
+        '请升级您的node版本.'
+    )
+  );
+  process.exit(1);
+}
+
+const packageJson = require('../package.json');
+const program = require('commander');
+
+program
+    .version(packageJson.version)
+    
+program
+    .command('app <appName>')
+	.action(function (...args) {
+		run('app', args)
+    })
+
+program
+    .command('build')
+    .action(function (...args){
+        run('build', args)
+    })
+
+program
+    .command('build-dev')
+    .action(function (...args){
+        run('build-dev', args)
+    })
+
+program
+    .command('pkg')
+    .action(function (...args){
+        run('pkg', args)
+    })
+
+program
+    .command('pkg-dev')
+    .action(function (...args){
+        run('pkg-dev', args)
+    })
+
+program
+    .command('start')
+    .action(function (...args){
+        run('start', args)
+    })
+
+program
+	.command('*')
+	.action(function (env) {
+		console.log('没有这个命令 "%s"', env)
+	})
+
+program.parse(process.argv)
+
+function run(script, args){
+    args.splice(0,0,require.resolve('../scripts/' + script))
+   
+    const spawn = require('react-dev-utils/crossSpawn');
+    const result = spawn.sync(
+        'node',
+        args,
+        { stdio: 'inherit' }
+    );
+    if (result.signal) {
+        if (result.signal === 'SIGKILL') {
+            console.log("构建失败，内存溢出或者进程太早退出导致，使用 kill -9 删除进程");
+        } else if (result.signal === 'SIGTERM') {
+            console.log('构建失败，进程太早退出，可能有人调用kill 或者killall或者系统关闭. ');
         }
-        process.exit(result.status);
-        break;
+        process.exit(1);
     }
-    default:
-        console.log('未知脚本 "' + script + '".');
-        break;
+    process.exit(result.status);
 }

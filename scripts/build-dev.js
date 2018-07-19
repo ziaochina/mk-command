@@ -10,7 +10,6 @@ process.on('unhandledRejection', err => {
 
 require('../config/env');
 
-const path = require('path');
 const chalk = require('chalk');
 const fs = require('fs-extra');
 const webpack = require('webpack');
@@ -66,7 +65,7 @@ function build(previousFileSizes) {
         return reject(err);
       }
       const messages = formatWebpackMessages(stats.toJson({}, true));
-      
+
       //存在编译异常
       if (messages.errors.length) {
         if (messages.errors.length > 1) {

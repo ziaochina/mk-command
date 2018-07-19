@@ -45,20 +45,21 @@ measureFileSizesBeforeBuild(paths.appPackage)
             fs.mkdirSync(paths.appPackageDev);
         }
         fs.copySync(libPath, paths.appPackageDev);
-        let ownHtmlPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'template', 'app', 'index.html')
-        let appHtmlPath = path.resolve(appDirectory, 'template', 'index.html')
+        let ownHtmlPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'template', 'app', 'index-dev.html')
+        let appHtmlPath = path.resolve(appDirectory, 'template', 'index-dev.html')
         let html = fs.existsSync(appHtmlPath) ? fs.readFileSync(appHtmlPath, 'utf-8') : fs.readFileSync(ownHtmlPath, 'utf-8');
         let render = template.compile(html, { debug: true });
+        let htmlOption = appJson.htmlOption
         html = render({
-            appName: (appJson.var && appJson.var.renderApp) || appJson.name,
+            appName: (htmlOption && htmlOption.renderApp) || appJson.name,
             title: appJson.description,
-            isMock: (appJson.var && appJson.var.isMock) || false,
-            token:  (appJson.var && appJson.var.token) || '',
-            preApp: (appJson.var && appJson.var.preApp)
-                ? JSON.stringify(appJson.var.preApp)
+            isMock: (htmlOption && htmlOption.isMock) || false,
+            token:  (htmlOption && htmlOption.token) || '',
+            preApp: (htmlOption && htmlOption.preApp && htmlOption.preApp.length > 0)
+                ? JSON.stringify(htmlOption.preApp)
                 : '',
             app: JSON.stringify({
-                ...(appJson.var && appJson.var.app),
+                ...(htmlOption && htmlOption.app),
                 [appJson.name]: { asset: appJson.name }
             }),
 
