@@ -1,6 +1,6 @@
 {
     "rootApp": "",
-    "serverOption": {
+    "server": {
         "proxy": null,
         "port": 8000
     },

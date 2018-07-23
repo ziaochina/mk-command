@@ -42,7 +42,7 @@ function createWebsite(name) {
     name: websiteName,
     version: '1.0.0',
     license: 'MIT',
-    author: 'monkey king',
+    author: '',
     keywords: ['mk', 'monkey king', 'react', 'redux', 'antd'],
     repository: {
       "type": "git",

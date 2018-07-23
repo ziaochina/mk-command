@@ -60,8 +60,8 @@ module.exports = function (
     );
 
     fs.move(
-        path.join(websitePath, 'welcome', 'npmignore'),
-        path.join(websitePath, 'welcome', '.npmignore'),
+        path.join(websitePath, 'apps', 'welcome', 'npmignore'),
+        path.join(websitePath, 'apps', 'welcome', '.npmignore'),
         [],
         err => {
             if (err) {
@@ -94,9 +94,9 @@ module.exports = function (
     console.log('    启动开发服务器.');
     console.log();
     console.log(
-        chalk.cyan(`  ${displayedCommand} ${useYarn ? '' : 'run '}build`)
+        chalk.cyan(`  ${displayedCommand} ${useYarn ? '' : 'run '}pkg`)
     );
-    console.log('    编译应用.');
+    console.log('    打包网站.');
     console.log();
     console.log('建议从下面的命令开始:');
     console.log();

@@ -42,7 +42,7 @@ function createApp(name) {
     name: appName,
     version: '1.0.0',
     license: 'MIT',
-    author: 'monkey king',
+    author: '',
     keywords: ['mk', 'monkey king', 'react', 'redux', 'antd'],
     repository: {
       "type": "git",

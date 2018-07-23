@@ -30,7 +30,7 @@ const {
 } = require('react-dev-utils/WebpackDevServerUtils');
 
 
-const useYarn = fs.existsSync(paths.yarnLockFile);
+const useYarn = true; // fs.existsSync(paths.yarnLockFile);
 const isInteractive = process.stdout.isTTY;
 
 const measureFileSizesBeforeBuild =
