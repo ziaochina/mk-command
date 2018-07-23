@@ -6,6 +6,7 @@
 import { fetch } from 'mk-utils'
 
 const mockData = fetch.mockData
+
 /*
 //初始化mock数据
 function initMockData() {

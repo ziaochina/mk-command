@@ -28,6 +28,7 @@ const measureFileSizesBeforeBuild =
 const appDirectory = fs.realpathSync(process.cwd());
 
 const appJson = require(paths.appPackageJson);
+const mkJson = require(path.join(appDirectory, 'mk.json'));
 
 // 检测必须的文件，不存在自动退出
 if (!checkRequiredFiles([paths.appIndexJs])) {
@@ -46,23 +47,21 @@ measureFileSizesBeforeBuild(paths.appPackage)
         }
         fs.copySync(libPath, paths.appPackage);
         let ownHtmlPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'template', 'app', 'index.html')
-        let appHtmlPath = path.resolve(appDirectory, 'template', 'index.html')
+        let appHtmlPath = path.resolve(appDirectory, 'index.html')
         let html = fs.existsSync(appHtmlPath) ? fs.readFileSync(appHtmlPath, 'utf-8') : fs.readFileSync(ownHtmlPath, 'utf-8');
         let render = template.compile(html);
-        let htmlOption = appJson.htmlOption
-        html = render({
-            appName: (htmlOption && htmlOption.renderApp) || appJson.name,
-            title: appJson.description,
-            isMock: (htmlOption && htmlOption.isMock) || false,
-            token:  (htmlOption && htmlOption.token) || '',
-            preApp: (htmlOption && htmlOption.preApp && htmlOption.preApp.length > 0)
-                ? JSON.stringify(htmlOption.preApp)
-                : '',
-            app: JSON.stringify({
-                ...(htmlOption && htmlOption.app),
-                [appJson.name]: { asset: appJson.name }
-            }),
 
+        let apps = Object.keys(mkJson.dependencies).reduce((a, b) => {
+            a[b] = { asset: `${b}.min.js` }
+            return a
+        }, {})
+        apps[appJson.name] = { asset: appJson.name + '.min.js' }
+        html = render({
+            rootApp: mkJson.rootApp || appJson.name,
+            title: appJson.description,
+            mkjs: 'mk.min.js',
+            requirejs:'require.min.js',
+            apps: JSON.stringify(apps),
         });
         fs.writeFileSync(path.resolve(paths.appPackage, 'index.html'), html);
 

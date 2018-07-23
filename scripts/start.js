@@ -39,44 +39,43 @@ const measureFileSizesBeforeBuild =
 const appDirectory = fs.realpathSync(process.cwd());
 
 const appJson = require(paths.appPackageJson);
+const mkJson = require(path.join(appDirectory, 'mk.json'));
 
 if (!checkRequiredFiles([paths.appIndexJs])) {
   process.exit(1);
 }
 
-
 measureFileSizesBeforeBuild(paths.appPublic)
   .then(previousFileSizes => {
-    //清空目录中文件
-    //fs.emptyDirSync(paths.appPackage);
-    
     let libPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'dist', 'debug')
     if (!fs.existsSync(paths.appPublic)) {
       fs.mkdirSync(paths.appPublic);
     }
+    else{
+      //清空目录中文件
+      fs.emptyDirSync(paths.appPublic);
+    }
     fs.copySync(libPath, paths.appPublic);
     let ownHtmlPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'template', 'app', 'index-dev.html')
-    let appHtmlPath = path.resolve(appDirectory, 'template', 'index-dev.html')
+    let appHtmlPath = path.resolve(appDirectory, 'index.html')
     let html = fs.existsSync(appHtmlPath) ? fs.readFileSync(appHtmlPath, 'utf-8') : fs.readFileSync(ownHtmlPath, 'utf-8');
-    let render = template.compile(html, { debug: true });
-    let htmlOption = appJson.htmlOption
-    html = render({
-      appName: (htmlOption && htmlOption.renderApp) || appJson.name,
-      title: appJson.description,
-      isMock: (htmlOption && htmlOption.isMock) || false,
-      token: (htmlOption && htmlOption.token) || '',
-      preApp: (htmlOption && htmlOption.preApp && htmlOption.preApp.length > 0)
-        ? JSON.stringify(htmlOption.preApp)
-        : '',
-      app: JSON.stringify({
-        ...(htmlOption && htmlOption.app),
-        [appJson.name]: { asset: appJson.name + '.js' }
-      }),
+    let render = template.compile(html);
 
+    let apps = Object.keys(mkJson.dependencies).reduce((a, b) => {
+        a[b] = { asset: `${b}.min.js` }
+        return a
+    }, {})
+    apps[appJson.name] = { asset: appJson.name + '.js' }
+    html = render({
+        rootApp: mkJson.rootApp || appJson.name,
+        mkjs: 'mk.js',
+        requirejs:'require.js',
+        title: appJson.description,
+        apps: JSON.stringify(apps),
     });
     fs.writeFileSync(path.resolve(paths.appPublic, 'index.html'), html);
 
-    let serverOption = appJson.serverOption
+    let serverOption = mkJson.server
     const DEFAULT_PORT = parseInt(serverOption.port, 10) || 8000;
     const HOST = serverOption.host || '0.0.0.0';
 
@@ -92,7 +91,7 @@ measureFileSizesBeforeBuild(paths.appPublic)
         // 创建webpack编译器
         const compiler = createCompiler(webpack, config, appName, urls, useYarn);
         // 加载代理配置
-        const proxySetting = require(paths.appPackageJson).proxy;
+        const proxySetting = serverOption.proxy;
         const proxyConfig = prepareProxy(proxySetting, paths.appPublic);
         // 服务器配置
         const serverConfig = createDevServerConfig(

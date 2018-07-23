@@ -10,6 +10,7 @@ const paths = require('./paths');
 
 const env = getClientEnvironment();
 const appPackageJson = require(paths.appPackageJson);
+
 const appDirectory = fs.realpathSync(process.cwd());
 module.exports = {
     mode: 'production',

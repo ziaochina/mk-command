@@ -33,6 +33,12 @@ program
     })
 
 program
+    .command('website <website>')
+    .action(function (...args){
+        run('website', args)
+    })
+
+program
     .command('build')
     .action(function (...args){
         run('build', args)

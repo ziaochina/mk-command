@@ -8,8 +8,9 @@ const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
 const spawn = require('react-dev-utils/crossSpawn');
+const template = require('art-template');
 
-module.exports = function(
+module.exports = function (
   appPath,
   appName,
   originalDirectory
@@ -25,22 +26,8 @@ module.exports = function(
     'start': 'mk start',
     'build': 'mk build',
     'build-dev': 'mk build-dev',
-    'pkg': 'mk pkg',
-    'pkg-dev': 'mk pkg-dev',
+    'pkg': 'mk pkg'
   };
-
-  appPackage.htmlOption =  {
-    "isMock": false,
-    "token": "",
-    "preApp": [],
-    "app": {},
-    "renderApp": ""
-  };
-
-  appPackage.serverOption = {
-    "proxy": {},
-    "port": 8000
-  }
 
   fs.writeFileSync(
     path.join(appPath, 'package.json'),
@@ -51,13 +38,13 @@ module.exports = function(
   if (fs.existsSync(templatePath)) {
     fs.copySync(templatePath, appPath);
 
-    var styleContent = fs.readFileSync(path.join(appPath,'style.less'), 'utf-8');
+    var styleContent = fs.readFileSync(path.join(appPath, 'style.less'), 'utf-8');
     styleContent = styleContent.replace('<appName>', appPackage.name);
-    fs.writeFileSync(path.join(appPath,'style.less'), styleContent);
+    fs.writeFileSync(path.join(appPath, 'style.less'), styleContent);
 
-    var dataContent = fs.readFileSync(path.join(appPath,'data.js'), 'utf-8');
+    var dataContent = fs.readFileSync(path.join(appPath, 'data.js'), 'utf-8');
     dataContent = dataContent.replace('<appName>', appPackage.name);
-    fs.writeFileSync(path.join(appPath,'data.js'), dataContent);
+    fs.writeFileSync(path.join(appPath, 'data.js'), dataContent);
 
   } else {
     console.error(
@@ -72,7 +59,7 @@ module.exports = function(
     [],
     err => {
       if (err) {
-          //已经存在替换内容
+        //已经存在替换内容
         if (err.code === 'EEXIST') {
           const data = fs.readFileSync(path.join(appPath, 'gitignore'));
           fs.appendFileSync(path.join(appPath, '.gitignore'), data);
@@ -90,7 +77,7 @@ module.exports = function(
     [],
     err => {
       if (err) {
-          //已经存在替换内容
+        //已经存在替换内容
         if (err.code === 'EEXIST') {
           const data = fs.readFileSync(path.join(appPath, 'npmignore'));
           fs.appendFileSync(path.join(appPath, '.npmignore'), data);
@@ -130,12 +117,3 @@ module.exports = function(
   console.log();
   console.log('感谢您使用mk!');
 };
-
-function isReactInstalled(appPackage) {
-  const dependencies = appPackage.dependencies || {};
-
-  return (
-    typeof dependencies.react !== 'undefined' &&
-    typeof dependencies['react-dom'] !== 'undefined'
-  );
-}
