@@ -110,6 +110,11 @@ module.exports = function (
   );
   console.log('    编译应用.');
   console.log();
+  console.log(
+    chalk.cyan(`  ${displayedCommand} ${useYarn ? '' : 'run '}build`)
+  );
+  console.log('    打包应用.');
+  console.log();
   console.log('建议从下面的命令开始:');
   console.log();
   console.log(chalk.cyan('  cd'), cdpath);
