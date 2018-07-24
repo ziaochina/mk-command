@@ -39,7 +39,7 @@ const measureFileSizesBeforeBuild =
 const appDirectory = fs.realpathSync(process.cwd());
 
 const appJson = require(paths.appPackageJson);
-const mkJson = require(path.join(appDirectory, 'mk.json'));
+
 
 
 /*
@@ -49,7 +49,6 @@ if (!checkRequiredFiles([paths.appIndexJs])) {
 */
 measureFileSizesBeforeBuild(paths.appPublic)
     .then(previousFileSizes => {
-      
         let libPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'dist', 'debug')
         if (!fs.existsSync(paths.appPublic)) {
             fs.mkdirSync(paths.appPublic);
@@ -60,11 +59,16 @@ measureFileSizesBeforeBuild(paths.appPublic)
         }
         
         fs.copySync(libPath, paths.appPublic);
+
+        const spawn = require('react-dev-utils/crossSpawn');
+        spawn.sync('node',[require.resolve('./scan.js')],{ stdio: 'inherit' });
+        spawn.sync('node',[require.resolve('./copy-local-dep.js')],{ stdio: 'inherit' });
+
         let ownHtmlPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'template', 'app', 'index-dev.html')
         let appHtmlPath = path.resolve(appDirectory, 'index.html')
         let html = fs.existsSync(appHtmlPath) ? fs.readFileSync(appHtmlPath, 'utf-8') : fs.readFileSync(ownHtmlPath, 'utf-8');
         let render = template.compile(html);
-
+        let mkJson = JSON.parse(fs.readFileSync(path.join(appDirectory, 'mk.json'), 'utf-8') )
         let apps = Object.keys(mkJson.dependencies).reduce((a, b) => {
             //copy依赖app资源
             if (mkJson.dependencies[b].indexOf('file:') != -1) {
@@ -85,10 +89,7 @@ measureFileSizesBeforeBuild(paths.appPublic)
         });
         fs.writeFileSync(path.resolve(paths.appPublic, 'index.html'), html);
 
-        const spawn = require('react-dev-utils/crossSpawn');
-        spawn.sync('node',[require.resolve('./scan.js')],{ stdio: 'inherit' });
-        spawn.sync('node',[require.resolve('./copy-local-dep.js')],{ stdio: 'inherit' });
-      
+   
         let serverOption = mkJson.server
         const DEFAULT_PORT = parseInt(serverOption.port, 10) || 8000;
         const HOST = serverOption.host || '0.0.0.0';
@@ -141,5 +142,5 @@ measureFileSizesBeforeBuild(paths.appPublic)
                 process.exit(1);
             });
 
-
+       
     })

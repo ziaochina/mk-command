@@ -56,7 +56,7 @@ measureFileSizesBeforeBuild(paths.appDevBuild)
 
 
 function build(previousFileSizes) {
-  console.log('编译中...');
+  console.log('编译开发环境资源...');
 
   let compiler = webpack(config);
   return new Promise((resolve, reject) => {

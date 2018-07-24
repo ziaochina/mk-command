@@ -72,14 +72,14 @@ measureFileSizesBeforeBuild(paths.appPackage)
         ({ stats, previousFileSizes, warnings }) => {
             //存在警告
             if (warnings.length) {
-                console.log(chalk.yellow('编译警告.\n'));
+                console.log(chalk.yellow('打包警告.\n'));
                 console.log(warnings.join('\n\n'));
             } else {
-                console.log(chalk.green('编译成功.'));
+                console.log(chalk.green('打包成功.'));
             }
         },
         err => {
-            console.log(chalk.red('编译失败.\n'));
+            console.log(chalk.red('打包失败.\n'));
             //输出编译异常
             printBuildError(err);
             process.exit(1);
@@ -88,7 +88,7 @@ measureFileSizesBeforeBuild(paths.appPackage)
 
 
 function build(previousFileSizes) {
-    console.log('编译中...');
+    console.log('打包开发环境资源...');
     let compiler = webpack(config);
     return new Promise((resolve, reject) => {
         compiler.run((err, stats) => {

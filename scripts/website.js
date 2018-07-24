@@ -59,7 +59,7 @@ function createWebsite(name) {
   const originalDirectory = process.cwd();
   //更换工作目录
   process.chdir(root);
-  
+
   run(root, websiteName, originalDirectory);
 }
 
@@ -67,11 +67,11 @@ function install(root, dependencies, isOnline) {
   return new Promise((resolve, reject) => {
     let command;
     let args;
-   
+
     command = 'yarnpkg';
     args = ['add', '--exact'];
     if (!isOnline) {
-        args.push('--offline');
+      args.push('--offline');
     }
     [].push.apply(args, dependencies);
 
@@ -79,8 +79,8 @@ function install(root, dependencies, isOnline) {
     args.push(root);
 
     if (!isOnline) {
-        console.log(chalk.yellow('请联网.'));
-        console.log();
+      console.log(chalk.yellow('请联网.'));
+      console.log();
     }
 
     const child = spawn(command, args, { stdio: 'inherit' });
@@ -180,38 +180,14 @@ function run(
 
 
 function getPackageName(installPackage) {
-   if(installPackage.match(/.+@/)) {
-        return Promise.resolve(
-          installPackage.charAt(0) + installPackage.substr(1).split('@')[0]
-        );
-    }
-    else{
-        return Promise.resolve(installPackage);
-    }
-}
-
-
-
-function makeCaretRange(dependencies, name) {
-  const version = dependencies[name];
-
-  if (typeof version === 'undefined') {
-    console.error(chalk.red(`依赖 ${name} 在package.json中检测不到`));
-    process.exit(1);
-  }
-
-  let patchedVersion = `^${version}`;
-
-  if (!semver.validRange(patchedVersion)) {
-    console.error(
-      `依赖 ${name} 版本 ${chalk.red(
-        version
-      )} ，无效版本 ${chalk.red(patchedVersion)}`
+  if (installPackage.match(/.+@/)) {
+    return Promise.resolve(
+      installPackage.charAt(0) + installPackage.substr(1).split('@')[0]
     );
-    patchedVersion = version;
   }
-
-  dependencies[name] = patchedVersion;
+  else {
+    return Promise.resolve(installPackage);
+  }
 }
 
 function setCaretRangeForRuntimeDeps(packageName) {
@@ -228,8 +204,6 @@ function setCaretRangeForRuntimeDeps(packageName) {
     console.error(chalk.red(`package.json中检测不到依赖包 ${packageName} `));
     process.exit(1);
   }
-
-  makeCaretRange(packageJson.dependencies, 'mk-sdk');
 
   fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
 }

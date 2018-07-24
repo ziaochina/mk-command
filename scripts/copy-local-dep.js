@@ -18,6 +18,7 @@ const paths = require('../config/paths');
 const appJson = require(paths.appPackageJson);
 const mkJsonPath = path.join(paths.appPath, 'mk.json')
 const mkJson = require(mkJsonPath);
+console.log(mkJson)
 var appsDirectory = process.argv[2] ? path.resolve(process.argv[2]) : path.join(paths.appPath, 'apps');
 
 console.log('正在拷贝本地依赖app编译结果,在' + appsDirectory + '目录...\n')

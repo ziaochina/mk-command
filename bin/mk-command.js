@@ -47,65 +47,65 @@ program
 program
     .command('app <appName>')
     .action(function (...args) {
-        run('app', args)
+        let s = run('app', args);
+        process.exit(s);
     })
 
 program
     .command('website <website>')
     .action(function (...args) {
-        run('website', args)
+        let s = run('website', args)
+        process.exit(s);
     })
 
 program
     .command('build')
     .action(function (...args) {
-        run('build', args)
-    })
-
-program
-    .command('build-dev')
-    .action(function (...args) {
-        run('build-dev', args)
+        let s = run('build', args)
+        s = run('build-dev', args)
+        process.exit(s);
     })
 
 program
     .command('pkg')
     .action(function (...args) {
-        run('pkg', args)
-    })
-
-program
-    .command('pkg-dev')
-    .action(function (...args) {
-        run('pkg-dev', args)
+        let s = run('pkg', args);
+        s = run('pkg-dev', args);
+        process.exit(s);
     })
 
 program
     .command('scan')
     .action(function (...args) {
-        run('scan', args)
+        let s = run('scan', args);
+        process.exit(s);
     })
 program
     .command('copy-local-dep')
     .action(function (...args) {
-        run('copy-local-dep', args)
+        let s = run('copy-local-dep', args);
+        process.exit(s);
     })
 program
     .command('start')
     .action(function (...args) {
-        run('start', args)
+        let s = run('start', args);
+        process.exit(s);
     })
 
 program
     .command('website-start')
     .action(function (...args) {
-        run('website-start', args)
+        let s = run('website-start', args);
+        process.exit(s);
     })
 
 program
     .command('website-pkg')
     .action(function (...args) {
-        run('website-pkg', args)
+        let s = run('website-pkg', args);
+        s = run('website-pkg-dev', args);
+        process.exit(s);
     })
 
 program
@@ -135,5 +135,6 @@ function run(script, args) {
         }
         process.exit(1);
     }
-    process.exit(result.status);
+    return result.status;
+    
 }

@@ -37,27 +37,26 @@ fs.writeFileSync(
   JSON.stringify(mkJson, null, 2)
 );
 console.log()
-console.log('扫描完成')
 
-function findApps(dir){
+function findApps(dir) {
   var files = fs.readdirSync(dir, () => { })
   files.forEach(fileName => {
-    
+
     var stats = fs.statSync(path.join(dir, fileName))
     //是文件
     if (stats.isFile()) {
       if (fileName === 'mk.json') {
         let subAppJson = require(path.join(dir, 'package.json')),
-          subDir = path.relative(paths.appPath,dir),
-          buildDir = path.relative(paths.appPath,path.join(dir,'build','dev'))
+          subDir = path.relative(paths.appPath, dir),
+          buildDir = path.relative(paths.appPath, path.join(dir, 'build', 'dev'))
 
-        console.log(`@发现应用${chalk.cyan(subAppJson.name)},路径:${ chalk.cyan(subDir)}`)
-        localApps[subAppJson.name] = `file:${ path.relative(paths.appPath,dir)}`
+        console.log(`@发现应用${chalk.cyan(subAppJson.name)},路径:${chalk.cyan(subDir)}`)
+        localApps[subAppJson.name] = `file:${path.relative(paths.appPath, dir)}`
       }
     } else if (stats.isDirectory() && fileName != 'node_modules') {
       findApps(path.join(dir, fileName))
     }
   })
- 
+
 }
 
