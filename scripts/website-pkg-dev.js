@@ -27,6 +27,7 @@ const appDirectory = fs.realpathSync(process.cwd());
 const appJson = require(paths.appPackageJson);
 
 
+
 measureFileSizesBeforeBuild(paths.appPackageDev)
     .then(previousFileSizes => {
         console.log(chalk.green('正在打包开发环境网站...\n'))
@@ -72,13 +73,7 @@ measureFileSizesBeforeBuild(paths.appPackageDev)
             a[b] = { asset: `${b}.js` }
             return a
         }, {})
-        html = render({
-            rootApp: mkJson.rootApp || appJson.name,
-            mkjs: 'mk.js',
-            requirejs: 'require.js',
-            title: appJson.description,
-            apps: JSON.stringify(apps),
-        });
+        html = render({...mkJson, dev:true});
         fs.writeFileSync(path.resolve(paths.appPackageDev, 'index.html'), html);
         console.log()
         console.log(chalk.green(`打包完成，目录:${paths.appPackageDev}\n`))

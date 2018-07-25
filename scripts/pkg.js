@@ -46,23 +46,10 @@ measureFileSizesBeforeBuild(paths.appPackage)
             fs.mkdirSync(paths.appPackage);
         }
         fs.copySync(libPath, paths.appPackage);
-        let ownHtmlPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'template', 'app', 'index.html')
         let appHtmlPath = path.resolve(appDirectory, 'index.html')
-        let html = fs.existsSync(appHtmlPath) ? fs.readFileSync(appHtmlPath, 'utf-8') : fs.readFileSync(ownHtmlPath, 'utf-8');
+        let html = fs.readFileSync(appHtmlPath, 'utf-8')
         let render = template.compile(html);
-
-        let apps = Object.keys(mkJson.dependencies).reduce((a, b) => {
-            a[b] = { asset: `${b}.min.js` }
-            return a
-        }, {})
-        apps[appJson.name] = { asset: appJson.name + '.min.js' }
-        html = render({
-            rootApp: mkJson.rootApp || appJson.name,
-            title: appJson.description,
-            mkjs: 'mk.min.js',
-            requirejs:'require.min.js',
-            apps: JSON.stringify(apps),
-        });
+        html = render(mkJson);
         fs.writeFileSync(path.resolve(paths.appPackage, 'index.html'), html);
 
         return ret
@@ -74,7 +61,7 @@ measureFileSizesBeforeBuild(paths.appPackage)
                 console.log(chalk.yellow('打包警告.\n'));
                 console.log(warnings.join('\n\n'));
             } else {
-                console.log(chalk.green('打包成功.'));
+                console.log(chalk.green(`打包成功,输出目录:${paths.appPackage}`));
             }
         },
         err => {

@@ -13,7 +13,7 @@
 </head>
 <body>
     <div id='app' style="width:100%;height: 100%"></div>
-    <script src='{{@requirejs}}'></script>
+    <script src="{{dev===true?'require.js':'require.min.js'}}"></script>
     <script>
         __require_base_url__ = '';
         window.mkReady = function (mk) {
@@ -36,12 +36,18 @@
             /*mk.requireApps(require, {{@preApp}}, function () {*/
                 mk.init({
                     requireFn: require,
-                    appsMap:{{@apps}}
+                    appsMap:{
+                        {{each dependencies val key}}
+                        {{key}}:"{{dev===true?key+'.js':key+'.min.js'}}",
+                        {{/each}}
+                        {{}}
+                        {{name}}:"{{dev===true?name+'.js':name+'.min.js'}}",
+                    }
                 });
-                mk.render('{{@rootApp}}', 'app');
+                mk.render('{{rootApp || name}}', 'app');
             /*})*/
         }
     </script>
-    <script src='{{@mkjs}}'></script>
+    <script src="{{dev===true?'mk.js':'mk.min.js'}}"></script>
 </body>
 </html>

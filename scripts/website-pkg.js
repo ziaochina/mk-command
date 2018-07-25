@@ -72,13 +72,7 @@ measureFileSizesBeforeBuild(paths.appPackage)
             a[b] = { asset: `${b}.min.js` }
             return a
         }, {})
-        html = render({
-            rootApp: mkJson.rootApp || appJson.name,
-            mkjs: 'mk.min.js',
-            requirejs: 'require.min.js',
-            title: appJson.description,
-            apps: JSON.stringify(apps),
-        });
+        html = render(mkJson);
         fs.writeFileSync(path.resolve(paths.appPackage, 'index.html'), html);
         console.log()
         console.log(chalk.green(`打包完成，目录:${paths.appPackage}\n`))

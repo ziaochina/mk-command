@@ -55,6 +55,22 @@ function createApp(name) {
     JSON.stringify(packageJson, null, 2)
   );
 
+  const mkJson = {
+    "name": appName,
+    "title": appName,
+    "server": {
+      "proxy": null,
+      "port": 8000
+    },
+    "dependencies": {}
+  }
+
+  fs.writeFileSync(
+    path.join(root, 'mk.json'),
+    JSON.stringify(mkJson, null, 2)
+  );
+
+
   const useYarn = true;
   const originalDirectory = process.cwd();
   //更换工作目录

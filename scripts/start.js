@@ -56,23 +56,10 @@ measureFileSizesBeforeBuild(paths.appPublic)
       fs.emptyDirSync(paths.appPublic);
     }
     fs.copySync(libPath, paths.appPublic);
-    let ownHtmlPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'template', 'app', 'index-dev.html')
     let appHtmlPath = path.resolve(appDirectory, 'index.html')
-    let html = fs.existsSync(appHtmlPath) ? fs.readFileSync(appHtmlPath, 'utf-8') : fs.readFileSync(ownHtmlPath, 'utf-8');
+    let html = fs.readFileSync(appHtmlPath, 'utf-8')
     let render = template.compile(html);
-
-    let apps = Object.keys(mkJson.dependencies).reduce((a, b) => {
-        a[b] = { asset: `${b}.min.js` }
-        return a
-    }, {})
-    apps[appJson.name] = { asset: appJson.name + '.js' }
-    html = render({
-        rootApp: mkJson.rootApp || appJson.name,
-        mkjs: 'mk.js',
-        requirejs:'require.js',
-        title: appJson.description,
-        apps: JSON.stringify(apps),
-    });
+    html = render({ ...mkJson, dev:true});
     fs.writeFileSync(path.resolve(paths.appPublic, 'index.html'), html);
 
     let serverOption = mkJson.server

@@ -28,6 +28,7 @@ const measureFileSizesBeforeBuild =
 const appDirectory = fs.realpathSync(process.cwd());
 
 const appJson = require(paths.appPackageJson);
+const mkJson = require(path.join(appDirectory, 'mk.json'));
 
 // 检测必须的文件，不存在自动退出
 if (!checkRequiredFiles([paths.appIndexJs])) {
@@ -45,25 +46,10 @@ measureFileSizesBeforeBuild(paths.appPackageDev)
             fs.mkdirSync(paths.appPackageDev);
         }
         fs.copySync(libPath, paths.appPackageDev);
-        let ownHtmlPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'template', 'app', 'index-dev.html')
-        let appHtmlPath = path.resolve(appDirectory, 'template', 'index-dev.html')
-        let html = fs.existsSync(appHtmlPath) ? fs.readFileSync(appHtmlPath, 'utf-8') : fs.readFileSync(ownHtmlPath, 'utf-8');
+        let appHtmlPath = path.resolve(appDirectory, 'index.html')
+        let html = fs.readFileSync(appHtmlPath, 'utf-8')
         let render = template.compile(html, { debug: true });
-        let htmlOption = appJson.htmlOption
-        html = render({
-            appName: (htmlOption && htmlOption.renderApp) || appJson.name,
-            title: appJson.description,
-            isMock: (htmlOption && htmlOption.isMock) || false,
-            token:  (htmlOption && htmlOption.token) || '',
-            preApp: (htmlOption && htmlOption.preApp && htmlOption.preApp.length > 0)
-                ? JSON.stringify(htmlOption.preApp)
-                : '',
-            app: JSON.stringify({
-                ...(htmlOption && htmlOption.app),
-                [appJson.name]: { asset: appJson.name }
-            }),
-
-        });
+        html = render({ ...mkJson, dev: true })
         fs.writeFileSync(path.resolve(paths.appPackageDev, 'index.html'), html);
 
         return ret
@@ -75,7 +61,7 @@ measureFileSizesBeforeBuild(paths.appPackageDev)
                 console.log(chalk.yellow('打包警告.\n'));
                 console.log(warnings.join('\n\n'));
             } else {
-                console.log(chalk.green('打包成功.'));
+                console.log(chalk.green(`打包成功,输出目录:${paths.appPackageDev}`));
             }
         },
         err => {

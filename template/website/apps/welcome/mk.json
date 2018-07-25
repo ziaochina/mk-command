@@ -1,8 +1,9 @@
 {
-    "rootApp": "",
+    "name": "welcome",
+    "title": "welcome",
     "server": {
-        "proxy": null,
-        "port": 8000
+      "proxy": null,
+      "port": 8000
     },
     "dependencies": {}
-}
+  }
