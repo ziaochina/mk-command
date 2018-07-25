@@ -34,7 +34,7 @@ if (!checkRequiredFiles([paths.appIndexJs])) {
     process.exit(1);
 }
 
-measureFileSizesBeforeBuild(paths.appPackage)
+measureFileSizesBeforeBuild(paths.appPackageDev)
     .then(previousFileSizes => {
         //清空目录中文件
         fs.emptyDirSync(paths.appPackageDev);

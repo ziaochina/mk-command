@@ -25,7 +25,6 @@ module.exports = function (
   appPackage.scripts = {
     'start': 'mk start',
     'build': 'mk build',
-    'build-dev': 'mk build-dev',
     'pkg': 'mk pkg'
   };
 
