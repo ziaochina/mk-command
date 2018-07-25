@@ -110,7 +110,7 @@ module.exports = function (
   console.log('    编译应用.');
   console.log();
   console.log(
-    chalk.cyan(`  ${displayedCommand} ${useYarn ? '' : 'run '}build`)
+    chalk.cyan(`  ${displayedCommand} ${useYarn ? '' : 'run '}pkg`)
   );
   console.log('    打包应用.');
   console.log();
