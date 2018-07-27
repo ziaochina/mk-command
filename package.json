@@ -1,6 +1,6 @@
 {
   "name": "mk-command",
-  "version": "1.0.107",
+  "version": "1.0.108",
   "description": "mk脚手架",
   "license": "MIT",
   "bin": {
