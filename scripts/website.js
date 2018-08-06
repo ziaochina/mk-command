@@ -33,207 +33,120 @@ function createWebsite(name) {
   const root = path.resolve(name);
   const websiteName = path.basename(root);
 
-  fs.ensureDirSync(name);
+  createDir(root, name)
+    .then(() => createPackageJson(root, websiteName))
+    .then(() => install())
+    .then(() => init(name, root))
+    .catch(reason => exceptionHandler(reason, root))
+}
 
-  console.log(`开始创建网站，目录： ${chalk.green(root)}.`);
+function createDir(root, name) {
+  return new Promise((resolve, reject) => {
+    fs.ensureDirSync(name);
+    //更换工作目录
+    process.chdir(root);
+    console.log(`开始创建网站，目录： ${chalk.green(root)}.`);
+    console.log();
+    resolve();
+  })
+}
+
+function createPackageJson(root, websiteName) {
+  return new Promise((resolve, reject) => {
+    const packageJson = {
+      isMKWebsite: true,
+      name: websiteName,
+      description: websiteName,
+      version: '1.0.0',
+      license: 'MIT',
+      author: '',
+      keywords: ['mk', 'monkey king', 'react', 'redux', 'antd'],
+      repository: {
+        "type": "git",
+        "url": "git+https://github.com/ziaochina/mk-command.git"
+      },
+      server: {
+        "proxy": null,
+        "port": 8000
+      },
+      dependencies: {
+        "mk-command": '*',
+        "mk-sdk": '*'
+      },
+      appDependencies: {}
+    };
+
+    fs.writeFileSync(
+      path.join(root, 'package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
+    resolve()
+  })
+}
+
+function install() {
+  return new Promise((resolve, reject) => {
+    const spawn = require('react-dev-utils/crossSpawn');
+    spawn.sync('node', [require.resolve('./install.js')], { stdio: 'inherit' });
+    resolve();
+  })
+}
+function init(name, root) {
+  return new Promise((resolve, reject) => {
+    const initScriptPath = path.resolve(
+      process.cwd(),
+      'node_modules',
+      'mk-command',
+      'scripts',
+      'website-init.js'
+    );
+    const originalDirectory = process.cwd();
+    const init = require(initScriptPath);
+    init(root, name, originalDirectory)
+    resolve()
+  })
+}
+
+function exceptionHandler(reason, root) {
+  console.log();
+  console.log('安装退出.');
+  if (reason.command) {
+    console.log(`  ${chalk.cyan(reason.command)} 失败.`);
+  } else {
+    console.log(chalk.red('未知异常，请提交错误报告:'));
+    console.log(reason);
+  }
   console.log();
 
-  const packageJson = {
-    name: websiteName,
-    version: '1.0.0',
-    license: 'MIT',
-    author: '',
-    keywords: ['mk', 'monkey king', 'react', 'redux', 'antd'],
-    repository: {
-      "type": "git",
-      "url": "git+https://github.com/ziaochina/mk-command.git"
-    }
-  };
-
-  fs.writeFileSync(
-    path.join(root, 'package.json'),
-    JSON.stringify(packageJson, null, 2)
-  );
-
-  const useYarn = true;
-  const originalDirectory = process.cwd();
-  //更换工作目录
-  process.chdir(root);
-
-  run(root, websiteName, originalDirectory);
-}
-
-function install(root, dependencies, isOnline) {
-  return new Promise((resolve, reject) => {
-    let command;
-    let args;
-
-    command = 'yarnpkg';
-    args = ['add', '--exact'];
-    if (!isOnline) {
-      args.push('--offline');
-    }
-    [].push.apply(args, dependencies);
-
-    args.push('--cwd');
-    args.push(root);
-
-    if (!isOnline) {
-      console.log(chalk.yellow('请联网.'));
-      console.log();
-    }
-
-    const child = spawn(command, args, { stdio: 'inherit' });
-    child.on('close', code => {
-      if (code !== 0) {
-        reject({
-          command: `${command} ${args.join(' ')}`,
-        });
-        return;
+  const knownGeneratedFiles = [
+    'package.json',
+    'npm-debug.log',
+    'yarn-error.log',
+    'yarn-debug.log',
+    'node_modules',
+  ];
+  const currentFiles = fs.readdirSync(path.join(root));
+  currentFiles.forEach(file => {
+    knownGeneratedFiles.forEach(fileToMatch => {
+      if (
+        (fileToMatch.match(/.log/g) && file.indexOf(fileToMatch) === 0) ||
+        file === fileToMatch
+      ) {
+        console.log(`删除生成的文件... ${chalk.cyan(file)}`);
+        fs.removeSync(path.join(root, file));
       }
-      resolve();
     });
   });
-}
-
-function run(
-  root,
-  appName,
-  originalDirectory
-) {
-  const packageToInstall = 'mk-command@*';
-  const allDependencies = ['mk-sdk@*', packageToInstall];
-
-  console.log('正在安装依赖，可能需要几分钟...');
-  getPackageName(packageToInstall)
-    .then(packageName =>
-      checkIfOnline().then(isOnline => ({
-        isOnline: isOnline,
-        packageName: packageName,
-      }))
-    )
-    .then(info => {
-      const isOnline = info.isOnline;
-      const packageName = info.packageName;
-      return install(root, allDependencies, isOnline).then(
-        () => packageName
-      );
-    })
-    .then(packageName => {
-      setCaretRangeForRuntimeDeps(packageName);
-
-      const initScriptPath = path.resolve(
-        process.cwd(),
-        'node_modules',
-        packageName,
-        'scripts',
-        'website-init.js'
-      );
-      const init = require(initScriptPath);
-      init(root, appName, originalDirectory);
-
-    })
-    .catch(reason => {
-      console.log();
-      console.log('安装退出.');
-      if (reason.command) {
-        console.log(`  ${chalk.cyan(reason.command)} 失败.`);
-      } else {
-        console.log(chalk.red('未知异常，请提交错误报告:'));
-        console.log(reason);
-      }
-      console.log();
-
-      const knownGeneratedFiles = [
-        'package.json',
-        'npm-debug.log',
-        'yarn-error.log',
-        'yarn-debug.log',
-        'node_modules',
-      ];
-      const currentFiles = fs.readdirSync(path.join(root));
-      currentFiles.forEach(file => {
-        knownGeneratedFiles.forEach(fileToMatch => {
-          if (
-            (fileToMatch.match(/.log/g) && file.indexOf(fileToMatch) === 0) ||
-            file === fileToMatch
-          ) {
-            console.log(`删除生成的文件... ${chalk.cyan(file)}`);
-            fs.removeSync(path.join(root, file));
-          }
-        });
-      });
-      const remainingFiles = fs.readdirSync(path.join(root));
-      if (!remainingFiles.length) {
-        console.log(
-          `删除应用 ${chalk.cyan(`${appName} /`)}, 目录: ${chalk.cyan(
-            path.resolve(root, '..')
-          )}`
-        );
-        process.chdir(path.resolve(root, '..'));
-        fs.removeSync(path.join(root));
-      }
-      console.log('Done.');
-      process.exit(1);
-    });
-}
-
-
-function getPackageName(installPackage) {
-  if (installPackage.match(/.+@/)) {
-    return Promise.resolve(
-      installPackage.charAt(0) + installPackage.substr(1).split('@')[0]
+  const remainingFiles = fs.readdirSync(path.join(root));
+  if (!remainingFiles.length) {
+    console.log(
+      `删除应用 ${chalk.cyan(`${appName} /`)}, 目录: ${chalk.cyan(
+        path.resolve(root, '..')
+      )}`
     );
+    process.chdir(path.resolve(root, '..'));
+    fs.removeSync(path.join(root));
   }
-  else {
-    return Promise.resolve(installPackage);
-  }
-}
-
-function setCaretRangeForRuntimeDeps(packageName) {
-  const packagePath = path.join(process.cwd(), 'package.json');
-  const packageJson = require(packagePath);
-
-  if (typeof packageJson.dependencies === 'undefined') {
-    console.error(chalk.red('package.json中检测不到依赖'));
-    process.exit(1);
-  }
-
-  const packageVersion = packageJson.dependencies[packageName];
-  if (typeof packageVersion === 'undefined') {
-    console.error(chalk.red(`package.json中检测不到依赖包 ${packageName} `));
-    process.exit(1);
-  }
-
-  fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
-}
-
-function getProxy() {
-  if (process.env.https_proxy) {
-    return process.env.https_proxy;
-  } else {
-    try {
-      let httpsProxy = execSync('npm config get https-proxy')
-        .toString()
-        .trim();
-      return httpsProxy !== 'null' ? httpsProxy : undefined;
-    } catch (e) {
-      return;
-    }
-  }
-}
-
-function checkIfOnline(useYarn) {
-  return new Promise(resolve => {
-    dns.lookup('registry.yarnpkg.com', err => {
-      let proxy;
-      if (err != null && (proxy = getProxy())) {
-        dns.lookup(url.parse(proxy).hostname, proxyErr => {
-          resolve(proxyErr == null);
-        });
-      } else {
-        resolve(err == null);
-      }
-    });
-  });
+  console.log('Done.');
+  process.exit(1);
 }

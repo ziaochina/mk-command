@@ -100,7 +100,7 @@ module.exports = function (
     console.log();
     console.log('建议从下面的命令开始:');
     console.log();
-    console.log(chalk.cyan('  cd'), cdpath);
+    console.log(chalk.cyan('  cd'), websiteName);
     console.log(`  ${chalk.cyan(`${displayedCommand} start`)}`);
     console.log();
     console.log('感谢您使用mk!');

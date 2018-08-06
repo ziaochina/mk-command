@@ -109,6 +109,37 @@ program
     })
 
 program
+    .command('install')
+    .action(function (...args) {
+        let s = run('install', args);
+        process.exit(s);
+    })
+
+
+program
+    .command('upgrade')
+    .action(function (...args) {
+        let s = run('upgrade', args);
+        process.exit(s);
+    })
+
+program
+    .command('add')
+    .action(function (...args) {
+        let s = run('add', args);
+        process.exit(s);
+    })
+
+program
+    .command('remove')
+    .action(function (...args) {
+        let s = run('remove', args);
+        process.exit(s);
+    })
+
+
+
+program
     .command('*')
     .action(function (env) {
         console.log('没有这个命令 "%s"', env)

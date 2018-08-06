@@ -6,9 +6,9 @@ const ignoredFiles = require('react-dev-utils/ignoredFiles');
 const config = require('./webpack.config.dev');
 const path = require('path');
 const paths = require('./paths');
-const appJson = require(paths.appPackageJson);
-const mkJson = require(path.join(paths.appPath, 'mk.json'));
-const serverOption = mkJson.server
+const packageJson = require(paths.appPackageJson);
+
+const serverOption = packageJson.server
 const protocol = serverOption.https === 'true' ? 'https' : 'http';
 const host = serverOption.host || '0.0.0.0';
 

@@ -42,7 +42,7 @@ measureFileSizesBeforeBuild(paths.appProdBuild)
         console.log(chalk.yellow('编译警告.\n'));
         console.log(warnings.join('\n\n'));
       } else {
-        console.log(chalk.green('编译成功.'));
+        console.log(chalk.green(`编译成功.,输出目录:${paths.appProdBuild}`));
       }
     },
     err => {

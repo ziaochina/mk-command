@@ -33,16 +33,20 @@
                     }
                 },
             })
+            var options = {}
             /*mk.requireApps(require, {{@preApp}}, function () {*/
                 mk.init({
                     requireFn: require,
                     appsMap:{
-                        {{each dependencies val key}}
-                        {{key}}:"{{dev===true?key+'.js':key+'.min.js'}}",
+                        {{each appDependencies val key}}
+                        "{{key}}":{
+                            asset:"{{dev===true?key+'.js':key+'.min.js'}}",
+                            options : Object.assign(options, {{val.options}})
+                        },
                         {{/each}}
                     }
                 });
-                mk.render('{{rootApp || name}}', 'app');
+                mk.render('welcome', 'app');
             /*})*/
         }
     </script>

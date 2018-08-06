@@ -56,24 +56,23 @@ measureFileSizesBeforeBuild(paths.appPackageDev)
         let html = fs.existsSync(appHtmlPath) ? fs.readFileSync(appHtmlPath, 'utf-8') : fs.readFileSync(ownHtmlPath, 'utf-8');
         let render = template.compile(html);
         console.log(`正在拷贝依赖app编译结果`)
-        let mkJson = JSON.parse(fs.readFileSync(path.join(appDirectory, 'mk.json'), 'utf-8') )
-        let apps = Object.keys(mkJson.dependencies).reduce((a, b) => {
+        let packageJson = JSON.parse(fs.readFileSync(path.join(appDirectory, 'package.json'), 'utf-8'))
+        let apps = Object.keys(packageJson.appDependencies).forEach(appName => {
             //copy依赖app资源
-            if (mkJson.dependencies[b].indexOf('file:') != -1) {
-                let depPath = path.resolve(appDirectory, mkJson.dependencies[b].replace('file:', ''), 'build', 'dev')
+            if (packageJson.appDependencies[appName].from == 'local') {
+                let depPath = path.resolve(appDirectory, packageJson.appDependencies[appName].path, 'build', 'dev')
                 if (fs.existsSync(depPath)) {
                     console.log(`拷贝${depPath}`)
                     fs.copySync(depPath, paths.appPackageDev);
                 } else {
                     console.log
                     console.log(chalk.red(`    依赖app编译结果${depPath}不存在`))
-                    console.log(chalk.red(`    请在${path.resolve(appDirectory, mkJson.dependencies[b].replace('file:', ''))},执行命令yarn build`))
+                    console.log(chalk.red(`    请在${path.resolve(appDirectory, packageJson.appDependencies[appName].path)},执行命令yarn build`))
                 }
             }
-            a[b] = { asset: `${b}.js` }
-            return a
-        }, {})
-        html = render({...mkJson, dev:true});
+        })
+        html = render(packageJson);
+        html = render({...packageJson, dev:true});
         fs.writeFileSync(path.resolve(paths.appPackageDev, 'index.html'), html);
         console.log()
         console.log(chalk.green(`打包完成，目录:${paths.appPackageDev}\n`))

@@ -27,8 +27,7 @@ const measureFileSizesBeforeBuild =
 
 const appDirectory = fs.realpathSync(process.cwd());
 
-const appJson = require(paths.appPackageJson);
-const mkJson = require(path.join(appDirectory, 'mk.json'));
+const packageJson = require(paths.appPackageJson);
 
 // 检测必须的文件，不存在自动退出
 if (!checkRequiredFiles([paths.appIndexJs])) {
@@ -49,7 +48,7 @@ measureFileSizesBeforeBuild(paths.appPackage)
         let appHtmlPath = path.resolve(appDirectory, 'index.html')
         let html = fs.readFileSync(appHtmlPath, 'utf-8')
         let render = template.compile(html);
-        html = render(mkJson);
+        html = render(packageJson);
         fs.writeFileSync(path.resolve(paths.appPackage, 'index.html'), html);
 
         return ret

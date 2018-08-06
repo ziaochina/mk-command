@@ -15,48 +15,62 @@ const fs = require('fs-extra');
 const chalk = require('chalk');
 const paths = require('../config/paths');
 
-const appJson = require(paths.appPackageJson);
-const mkJsonPath = path.join(paths.appPath, 'mk.json')
-const mkJson = require(mkJsonPath);
-
+const packageJson = require(paths.appPackageJson);
 var appsDirectory = process.argv[2] ? path.resolve(process.argv[2]) : path.join(paths.appPath, 'apps');
 console.log('正在扫描本地依赖app,在' + appsDirectory + '目录...\n')
 
-var localApps = {}
+var appDependencies = {}
 
-findApps(appsDirectory)
+scanLocalApps(appsDirectory)
+scanRemoteApps()
 
-mkJson.dependencies = {
-  ...mkJson.dependencies,
-  ...localApps
+packageJson.appDependencies = {
+  ...packageJson.appDependencies,
+  ...appDependencies
 }
 console.log()
-console.log('更新网站本地依赖app,mk.json文件')
+console.log('更新网站本地依赖app,package.json文件')
 fs.writeFileSync(
-  mkJsonPath,
-  JSON.stringify(mkJson, null, 2)
+  paths.appPackageJson,
+  JSON.stringify(packageJson, null, 2)
 );
 console.log()
 
-function findApps(dir) {
+function scanLocalApps(dir) {
+  if(!fs.existsSync(dir))
+    return
+    
   var files = fs.readdirSync(dir, () => { })
   files.forEach(fileName => {
-
     var stats = fs.statSync(path.join(dir, fileName))
     //是文件
     if (stats.isFile()) {
-      if (fileName === 'mk.json') {
-        let subAppJson = require(path.join(dir, 'package.json')),
-          subDir = path.relative(paths.appPath, dir),
-          buildDir = path.relative(paths.appPath, path.join(dir, 'build', 'dev'))
-
-        console.log(`@发现应用${chalk.cyan(subAppJson.name)},路径:${chalk.cyan(subDir)}`)
-        localApps[subAppJson.name] = `file:${path.relative(paths.appPath, dir)}`
+      if (fileName === 'package.json') {
+        let subAppJson = require(path.join(dir, 'package.json'))
+        if (subAppJson.isMKApp == true) {
+          let subDir = path.relative(paths.appPath, dir)
+          console.log(`@发现应用${chalk.cyan(subAppJson.name)},路径:${chalk.cyan(subDir)}`)
+          appDependencies[subAppJson.name] = {
+            from: 'local',
+            path: path.relative(paths.appPath, dir),
+            options: {}
+          }
+        }
       }
     } else if (stats.isDirectory() && fileName != 'node_modules') {
-      findApps(path.join(dir, fileName))
+      scanLocalApps(path.join(dir, fileName))
     }
   })
-
 }
 
+function scanRemoteApps() {
+  Object.keys(packageJson.dependencies).forEach(k => {
+    let json = JSON.parse(fs.readFileSync(path.join(paths.appSrc, 'node_modules', k, 'package.json'), 'utf-8'))
+    if (json.isMKApp) {
+      appDependencies[json.name] = {
+        from: 'MK',
+        options: {}
+      }
+    }
+  })
+}
