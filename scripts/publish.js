@@ -17,17 +17,16 @@ const envinfo = require('envinfo');
 const packageJson = require('../package.json');
 
 checkIfOnline()
-    .then(isOnline => installByYarn(paths.appSrc, isOnline))
-    .then((r) =>  r && scan())
+    .then(isOnline => publish(paths.appSrc, isOnline))
 
 
-function installByYarn(root, isOnline) {
+function publish(root, isOnline) {
     return new Promise((resolve, reject) => {
         let command;
         let args;
 
         command = 'yarnpkg';
-        args = ['install', '--exact'];
+        args = ['publish', '--registry', 'http://localhost:4873'];
         if (!isOnline) {
             args.push('--offline');
         }
@@ -39,8 +38,18 @@ function installByYarn(root, isOnline) {
             console.log();
             resolve(false);
         }
-        spawn.sync(command, args, { stdio: 'inherit' });
-        resolve(true);
+
+        const child = spawn(command, args, { stdio: 'inherit' });
+        child.on('close', code => {
+            if (code !== 0) {
+                reject({
+                    command: `${command} ${args.join(' ')}`,
+                });
+                resolve(true);
+                return;
+            }
+        });
+       
     });
 }
 

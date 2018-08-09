@@ -80,6 +80,7 @@ function copyCoreLib(publicPath, appPath) {
   })
 }
 
+
 function scanAppDep(appPath) {
   return new Promise((resolve, reject) => {
     spawn.sync('node',
@@ -107,7 +108,8 @@ function createHtmlFile(publicPath, appPath) {
     let html = fs.readFileSync(htmlTplPath, 'utf-8');
     let render = template.compile(html);
     let packageJson = JSON.parse(fs.readFileSync(path.join(appPath, 'package.json'), 'utf-8'))
-    html = render({ ...packageJson, dev: true });
+    let mkJson = JSON.parse(fs.readFileSync(path.join(appPath, 'mk.json'), 'utf-8'))
+    html = render({ ...packageJson, ...mkJson, dev: true });
     fs.writeFileSync(path.resolve(publicPath, 'index.html'), html);
     resolve();
   })
@@ -115,8 +117,8 @@ function createHtmlFile(publicPath, appPath) {
 
 function getServerOption(appPath) {
   return new Promise((resolve, reject) => {
-    const packageJson = JSON.parse(fs.readFileSync(path.join(appPath, 'package.json'), 'utf-8'))
-    const serverOption = packageJson.server
+    const mkJson = JSON.parse(fs.readFileSync(path.join(appPath, 'mk.json'), 'utf-8'))
+    const serverOption = mkJson.server
     const DEFAULT_PORT = parseInt(serverOption.port, 10) || 8000
     const HOST = serverOption.host || '0.0.0.0'
     resolve({

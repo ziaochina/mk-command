@@ -115,14 +115,6 @@ program
         process.exit(s);
     })
 
-
-program
-    .command('upgrade')
-    .action(function (...args) {
-        let s = run('upgrade', args);
-        process.exit(s);
-    })
-
 program
     .command('add')
     .action(function (...args) {
@@ -137,6 +129,12 @@ program
         process.exit(s);
     })
 
+program
+    .command('publish')
+    .action(function (...args){
+        let s = run('publish', args);
+        process.exit(s);
+    })
 
 
 program

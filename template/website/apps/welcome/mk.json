@@ -1,0 +1,7 @@
+{
+    "server": {
+        "proxy": null,
+        "port": 8000
+    },
+    "dependencies": {}
+}

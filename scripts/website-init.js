@@ -19,21 +19,15 @@ module.exports = function (
     const websitePackage = require(path.join(websitePath, 'package.json'));
     const useYarn = true;
 
-    websitePackage.dependencies = websitePackage.dependencies || {};
-
-    websitePackage.scripts = {
-        'start': 'mk website-start',
-        'pkg': 'mk website-pkg'
-    };
-
-    fs.writeFileSync(
-        path.join(websitePath, 'package.json'),
-        JSON.stringify(websitePackage, null, 2)
-    );
 
     const templatePath = path.join(ownPath, 'template', 'website');
     if (fs.existsSync(templatePath)) {
         fs.copySync(templatePath, websitePath);
+
+        var readmeContent = fs.readFileSync(path.join(websitePath, 'README.md'), 'utf-8');
+        readmeContent = readmeContent.replace('<appName>', websitePackage.name);
+        fs.writeFileSync(path.join(websitePath, 'README.md'), readmeContent);
+
     } else {
         console.error(
             `找不到应用模板: ${chalk.green(templatePath)}`

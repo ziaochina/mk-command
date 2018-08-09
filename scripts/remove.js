@@ -15,19 +15,29 @@ const url = require('url');
 const hyperquest = require('hyperquest');
 const envinfo = require('envinfo');
 const packageJson = require('../package.json');
+let appName = process.argv[2];
+
+if (typeof appName === 'undefined') {
+    console.error('请输入appName:');
+    console.log();
+    console.log('示例:');
+    console.log(`  mk remove ${chalk.green('login')}`);
+    console.log();
+    process.exit(1);
+  }
+  
 
 checkIfOnline()
-    .then(isOnline => installByYarn(paths.appSrc, isOnline))
-    .then((r) =>  r && scan())
+    .then(isOnline => remove(paths.appSrc, isOnline))
 
 
-function installByYarn(root, isOnline) {
+function remove(root, isOnline) {
     return new Promise((resolve, reject) => {
         let command;
         let args;
 
         command = 'yarnpkg';
-        args = ['install', '--exact'];
+        args = ['remove', appName, '--registry', 'http://localhost:4873'];
         if (!isOnline) {
             args.push('--offline');
         }
@@ -39,6 +49,7 @@ function installByYarn(root, isOnline) {
             console.log();
             resolve(false);
         }
+
         spawn.sync(command, args, { stdio: 'inherit' });
         resolve(true);
     });

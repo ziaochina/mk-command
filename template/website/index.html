@@ -38,7 +38,7 @@
                 mk.init({
                     requireFn: require,
                     appsMap:{
-                        {{each appDependencies val key}}
+                        {{each dependencies val key}}
                         "{{key}}":{
                             asset:"{{dev===true?key+'.js':key+'.min.js'}}",
                             options : Object.assign(options, {{val.options}})

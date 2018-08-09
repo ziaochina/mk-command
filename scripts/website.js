@@ -27,6 +27,7 @@ if (typeof projectName === 'undefined') {
   process.exit(1);
 }
 
+console.log(chalk.green(`开始创建网站...`));
 createWebsite(projectName);
 
 function createWebsite(name) {
@@ -35,23 +36,24 @@ function createWebsite(name) {
 
   createDir(root, name)
     .then(() => createPackageJson(root, websiteName))
+    .then(() => createMKJson(root, websiteName))
     .then(() => install())
     .then(() => init(name, root))
     .catch(reason => exceptionHandler(reason, root))
 }
 
 function createDir(root, name) {
+  console.log(`  ${chalk.bold('[1/5]')} 创建目录:${root}...`)
   return new Promise((resolve, reject) => {
     fs.ensureDirSync(name);
     //更换工作目录
     process.chdir(root);
-    console.log(`开始创建网站，目录： ${chalk.green(root)}.`);
-    console.log();
     resolve();
   })
 }
 
 function createPackageJson(root, websiteName) {
+  console.log(`  ${chalk.bold('[2/5]')} 创建package.json文件...`)
   return new Promise((resolve, reject) => {
     const packageJson = {
       isMKWebsite: true,
@@ -65,15 +67,14 @@ function createPackageJson(root, websiteName) {
         "type": "git",
         "url": "git+https://github.com/ziaochina/mk-command.git"
       },
-      server: {
-        "proxy": null,
-        "port": 8000
+      scripts: {
+        'start': 'mk website-start',
+        'pkg': 'mk website-pkg'
       },
       dependencies: {
         "mk-command": '*',
         "mk-sdk": '*'
-      },
-      appDependencies: {}
+      }
     };
 
     fs.writeFileSync(
@@ -84,7 +85,28 @@ function createPackageJson(root, websiteName) {
   })
 }
 
+function createMKJson(root, name) {
+  console.log(`  ${chalk.bold('[3/5]')} 创建mk.json文件...`)
+  return new Promise((resolve, reject) => {
+    const mkJson = {
+      server: {
+        "proxy": null,
+        "port": 8000
+      },
+      dependencies: {}
+    };
+
+    fs.writeFileSync(
+      path.join(root, 'mk.json'),
+      JSON.stringify(mkJson, null, 2)
+    );
+    resolve()
+  })
+}
+
+
 function install() {
+  console.log(`  ${chalk.bold('[4/5]')} 执行安装依赖...`)
   return new Promise((resolve, reject) => {
     const spawn = require('react-dev-utils/crossSpawn');
     spawn.sync('node', [require.resolve('./install.js')], { stdio: 'inherit' });
@@ -92,6 +114,7 @@ function install() {
   })
 }
 function init(name, root) {
+  console.log(`  ${chalk.bold('[5/5]')} 初始化网站...`)
   return new Promise((resolve, reject) => {
     const initScriptPath = path.resolve(
       process.cwd(),

@@ -20,8 +20,9 @@ const targetPath =  process.argv[3] || paths.appPublic
 const mkJson = require(path.join(paths.appSrc, 'mk.json'));
 
 Object.keys(mkJson.dependencies).forEach(k => {
-    if (mkJson.dependencies[k].from == 'local') {
-        let buildPath = path.resolve(mkJson.dependencies[k].path, 'build', isRelease ? 'prod' : 'dev')
+    if (mkJson.dependencies[k].from == 'MK') {
+        let buildPath = path.resolve(paths.appSrc, 'node_modules', k, 'build', isRelease ? 'prod' : 'dev')
+        console.log(buildPath)
         if (fs.existsSync(buildPath)) {
             fs.copySync(buildPath, targetPath);
         }

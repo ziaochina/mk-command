@@ -20,19 +20,6 @@ module.exports = function (
   const appPackage = require(path.join(appPath, 'package.json'));
   const useYarn = true;
 
-  appPackage.dependencies = appPackage.dependencies || {};
-
-  appPackage.scripts = {
-    'start': 'mk start',
-    'build': 'mk build',
-    'pkg': 'mk pkg'
-  };
-
-  fs.writeFileSync(
-    path.join(appPath, 'package.json'),
-    JSON.stringify(appPackage, null, 2)
-  );
-
   const templatePath = path.join(ownPath, 'template', 'app');
   if (fs.existsSync(templatePath)) {
     fs.copySync(templatePath, appPath);
@@ -44,6 +31,10 @@ module.exports = function (
     var dataContent = fs.readFileSync(path.join(appPath, 'data.js'), 'utf-8');
     dataContent = dataContent.replace('<appName>', appPackage.name);
     fs.writeFileSync(path.join(appPath, 'data.js'), dataContent);
+
+    var readmeContent = fs.readFileSync(path.join(appPath, 'README.md'), 'utf-8');
+    readmeContent = readmeContent.replace('<appName>', appPackage.name);
+    fs.writeFileSync(path.join(appPath, 'README.md'), readmeContent);
 
   } else {
     console.error(

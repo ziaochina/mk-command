@@ -16,25 +16,22 @@ const chalk = require('chalk');
 const paths = require('../config/paths');
 
 const packageJson = require(paths.appPackageJson);
+const mkJson = require(path.join(paths.appSrc, 'mk.json'));
 var appsDirectory = process.argv[2] ? path.resolve(process.argv[2]) : path.join(paths.appPath, 'apps');
-console.log('正在扫描本地依赖app,在' + appsDirectory + '目录...\n')
 
 var appDependencies = {}
 
 scanLocalApps(appsDirectory)
 scanRemoteApps()
 
-packageJson.appDependencies = {
-  ...packageJson.appDependencies,
+mkJson.dependencies = {
+  ...mkJson.dependencies,
   ...appDependencies
 }
-console.log()
-console.log('更新网站本地依赖app,package.json文件')
 fs.writeFileSync(
-  paths.appPackageJson,
-  JSON.stringify(packageJson, null, 2)
+  path.join(paths.appSrc, 'mk.json'),
+  JSON.stringify(mkJson, null, 2)
 );
-console.log()
 
 function scanLocalApps(dir) {
   if(!fs.existsSync(dir))
@@ -49,7 +46,6 @@ function scanLocalApps(dir) {
         let subAppJson = require(path.join(dir, 'package.json'))
         if (subAppJson.isMKApp == true) {
           let subDir = path.relative(paths.appPath, dir)
-          console.log(`@发现应用${chalk.cyan(subAppJson.name)},路径:${chalk.cyan(subDir)}`)
           appDependencies[subAppJson.name] = {
             from: 'local',
             path: path.relative(paths.appPath, dir),

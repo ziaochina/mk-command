@@ -20,42 +20,44 @@ const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
 const FileSizeReporter = require('react-dev-utils/FileSizeReporter');
 const printBuildError = require('react-dev-utils/printBuildError');
 
-const measureFileSizesBeforeBuild =
-  FileSizeReporter.measureFileSizesBeforeBuild;
 
 // 检测必须的文件，不存在自动退出
 if (!checkRequiredFiles([paths.appIndexJs])) {
   process.exit(1);
 }
 
-measureFileSizesBeforeBuild(paths.appProdBuild)
-  .then(previousFileSizes => {
+console.log(chalk.green(`开始编译生产环境输出资源...`));
+
+emptyDir()
+  .then(() => build())
+  .then(({ warnings }) => {
+    //存在警告
+    if (warnings.length) {
+      console.log(chalk.yellow('编译警告.\n'));
+      console.log(warnings.join('\n\n'));
+    } else {
+      console.log(chalk.green(`编译成功.,输出目录:${paths.appProdBuild}`));
+    }
+  })
+  .catch(err => {
+    console.log(chalk.red('编译失败.\n'));
+    //输出编译异常
+    printBuildError(err);
+    process.exit(1);
+  })
+
+function emptyDir() {
+  console.log(`  ${chalk.bold('[1/2]')} 清空目录:${paths.appProdBuild}`)
+  return new Promise((resolve, reject) => {
     //清空目录中文件
     fs.emptyDirSync(paths.appProdBuild);
-    //开始build
-    return build(previousFileSizes);
+    resolve()
   })
-  .then(
-    ({ stats, previousFileSizes, warnings }) => {
-      //存在警告
-      if (warnings.length) {
-        console.log(chalk.yellow('编译警告.\n'));
-        console.log(warnings.join('\n\n'));
-      } else {
-        console.log(chalk.green(`编译成功.,输出目录:${paths.appProdBuild}`));
-      }
-    },
-    err => {
-      console.log(chalk.red('编译失败.\n'));
-      //输出编译异常
-      printBuildError(err);
-      process.exit(1);
-    }
-  );
+}
 
 
 function build(previousFileSizes) {
-  console.log('编译生产环境资源...');
+  console.log(`  ${chalk.bold('[2/2]')} 编译app...`)
 
   let compiler = webpack(config);
   return new Promise((resolve, reject) => {

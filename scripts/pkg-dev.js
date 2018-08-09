@@ -21,59 +21,45 @@ const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
 const FileSizeReporter = require('react-dev-utils/FileSizeReporter');
 const printBuildError = require('react-dev-utils/printBuildError');
 const template = require('art-template');
-
-const measureFileSizesBeforeBuild =
-    FileSizeReporter.measureFileSizesBeforeBuild;
+const spawn = require('cross-spawn');
 
 const appDirectory = fs.realpathSync(process.cwd());
-
-const packageJson = require(paths.appPackageJson);
 
 // 检测必须的文件，不存在自动退出
 if (!checkRequiredFiles([paths.appIndexJs])) {
     process.exit(1);
 }
-
-measureFileSizesBeforeBuild(paths.appPackageDev)
-    .then(previousFileSizes => {
+console.log(chalk.green(`开始打包开发环境网站...`));
+emptyDir()
+    .then(() => build())
+    .then(() => copyCoreLib())
+    .then(() => scanAppDep(paths.appPath))
+    .then(() => copyLocalDep(paths.appPath))
+    .then(() => copyRemoteDep(paths.appPath))
+    .then(() => createHtmlFile(paths.appPackageDev, paths.appPath))
+    .then(() => {
+        console.log(chalk.green(`打包成功,输出目录:${paths.appPackageDev}\n`));
+        return Promise.resolve()
+    })
+    .catch(err => {
+        console.log(chalk.red('打包失败.\n'));
+        //输出编译异常
+        printBuildError(err);
+        process.exit(1);
+    })
+  
+function emptyDir() {
+    console.log(`  ${chalk.bold('[1/7]')} 清空目录:${paths.appPackageDev}`)
+    return new Promise((resolve, reject) => {
         //清空目录中文件
         fs.emptyDirSync(paths.appPackageDev);
-        //开始build
-        let ret = build(previousFileSizes);
-        let libPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'dist', 'debug')
-        if (!fs.existsSync(paths.appPackageDev)) {
-            fs.mkdirSync(paths.appPackageDev);
-        }
-        fs.copySync(libPath, paths.appPackageDev);
-        let appHtmlPath = path.resolve(appDirectory, 'index.html')
-        let html = fs.readFileSync(appHtmlPath, 'utf-8')
-        let render = template.compile(html, { debug: true });
-        html = render({ ...packageJson, dev: true })
-        fs.writeFileSync(path.resolve(paths.appPackageDev, 'index.html'), html);
-
-        return ret
+        resolve()
     })
-    .then(
-        ({ stats, previousFileSizes, warnings }) => {
-            //存在警告
-            if (warnings.length) {
-                console.log(chalk.yellow('打包警告.\n'));
-                console.log(warnings.join('\n\n'));
-            } else {
-                console.log(chalk.green(`打包成功,输出目录:${paths.appPackageDev}`));
-            }
-        },
-        err => {
-            console.log(chalk.red('打包失败.\n'));
-            //输出编译异常
-            printBuildError(err);
-            process.exit(1);
-        }
-    );
+}
 
 
-function build(previousFileSizes) {
-    console.log('打包开发环境资源...');
+function build() {
+    console.log(`  ${chalk.bold('[2/7]')} 编译app...`)
     let compiler = webpack(config);
     return new Promise((resolve, reject) => {
         compiler.run((err, stats) => {
@@ -81,7 +67,6 @@ function build(previousFileSizes) {
                 return reject(err);
             }
             const messages = formatWebpackMessages(stats.toJson({}, true));
-
             //存在编译异常
             if (messages.errors.length) {
                 if (messages.errors.length > 1) {
@@ -90,11 +75,66 @@ function build(previousFileSizes) {
                 return reject(new Error(messages.errors.join('\n\n')));
             }
             return resolve({
-                stats,
-                previousFileSizes,
                 warnings: messages.warnings,
             });
         });
     });
+}
+
+function copyCoreLib() {
+    console.log(`  ${chalk.bold('[3/7]')} 复制sdk...`)
+    let libPath = path.resolve(appDirectory, 'node_modules', 'mk-sdk', 'dist', 'debug')
+    if (!fs.existsSync(paths.appPackageDev)) {
+        fs.mkdirSync(paths.appPackageDev);
+    }
+    fs.copySync(libPath, paths.appPackageDev);
+}
+
+function scanAppDep(appPath) {
+    console.log(`  ${chalk.bold('[4/7]')} 扫描依赖app...`)
+    return new Promise((resolve, reject) => {
+        spawn.sync('node',
+            [path.resolve(appPath, 'node_modules', 'mk-command', 'scripts', 'scan.js')],
+            { stdio: 'inherit' }
+        );
+        resolve()
+    })
+}
+
+function copyLocalDep(appPath) {
+    console.log(`  ${chalk.bold('[5/7]')} 复制本地依赖app...`)
+    return new Promise((resolve, reject) => {
+        spawn.sync('node',
+            [path.resolve(appPath, 'node_modules', 'mk-command', 'scripts', 'copy-local-dep.js'), '', paths.appPackageDev],
+            { stdio: 'inherit' }
+        );
+        resolve();
+    })
+}
+
+function copyRemoteDep(appPath) {
+    
+    console.log(`  ${chalk.bold('[6/7]')} 复制远程依赖app...`)
+    return new Promise((resolve, reject) => {
+        spawn.sync('node',
+            [path.resolve(appPath, 'node_modules', 'mk-command', 'scripts', 'copy-remote-dep.js'),  '', paths.appPackageDev],
+            { stdio: 'inherit' }
+        );
+        resolve();
+    })
+}
+
+function createHtmlFile(publicPath, appPath) {
+    console.log(`  ${chalk.bold('[7/7]')} 创建html文件...`)
+    return new Promise((resolve, reject) => {
+        const htmlTplPath = path.resolve(appPath, 'index.html');
+        let html = fs.readFileSync(htmlTplPath, 'utf-8');
+        let render = template.compile(html);
+        let packageJson = JSON.parse(fs.readFileSync(path.join(appPath, 'package.json'), 'utf-8'))
+        let mkJson = JSON.parse(fs.readFileSync(path.join(appPath, 'mk.json'), 'utf-8'))
+        html = render({ ...packageJson, ...mkJson, dev: true });
+        fs.writeFileSync(path.resolve(publicPath, 'index.html'), html);
+        resolve();
+    })
 }
 
