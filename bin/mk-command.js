@@ -136,6 +136,13 @@ program
         process.exit(s);
     })
 
+program
+    .command('adduser')
+    .action(function (...args){
+        let s = run('adduser', args);
+        process.exit(s);
+    })
+
 
 program
     .command('*')

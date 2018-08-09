@@ -5,6 +5,7 @@ const commander = require('commander');
 const fs = require('fs-extra');
 const path = require('path');
 const paths = require('../config/paths')
+const consts = require('../config/consts')
 const execSync = require('child_process').execSync;
 const spawn = require('cross-spawn');
 const semver = require('semver');
@@ -36,7 +37,7 @@ function add(root, isOnline) {
         let args;
 
         command = 'yarnpkg';
-        args = ['add', appName, '--registry', 'http://localhost:4873'];
+        args = ['add', appName, '--registry', consts.mkServerUrl];
         if (!isOnline) {
             args.push('--offline');
         }

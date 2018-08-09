@@ -15,6 +15,7 @@ const url = require('url');
 const hyperquest = require('hyperquest');
 const envinfo = require('envinfo');
 const packageJson = require('../package.json');
+const consts = require('../config/consts')
 let appName = process.argv[2];
 
 if (typeof appName === 'undefined') {
@@ -37,7 +38,7 @@ function remove(root, isOnline) {
         let args;
 
         command = 'yarnpkg';
-        args = ['remove', appName, '--registry', 'http://localhost:4873'];
+        args = ['remove', appName, '--registry', consts.mkServerUrl];
         if (!isOnline) {
             args.push('--offline');
         }

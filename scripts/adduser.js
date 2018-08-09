@@ -1,62 +1,37 @@
 'use strict';
 
 const chalk = require('chalk');
-const commander = require('commander');
-const fs = require('fs-extra');
-const path = require('path');
-const paths = require('../config/paths')
 const execSync = require('child_process').execSync;
 const spawn = require('cross-spawn');
-const semver = require('semver');
 const dns = require('dns');
-const tmp = require('tmp');
-const unpack = require('tar-pack').unpack;
 const url = require('url');
-const hyperquest = require('hyperquest');
-const envinfo = require('envinfo');
-const packageJson = require('../package.json');
 const consts = require('../config/consts')
 
+
 checkIfOnline()
-    .then(isOnline => publish(paths.appSrc, isOnline))
+    .then(isOnline => adduser(isOnline))
 
 
-function publish(root, isOnline) {
+function adduser(isOnline) {
     return new Promise((resolve, reject) => {
         let command;
         let args;
 
-        command = 'yarnpkg';
-        args = ['publish', '--registry', consts.mkServerUrl];
+        command = 'npm';
+        args = ['adduser', '--registry', consts.mkServerUrl];
         if (!isOnline) {
             args.push('--offline');
         }
         args.push('--cwd');
-        args.push(root);
 
         if (!isOnline) {
             console.log(chalk.yellow('请联网.'));
             console.log();
             resolve(false);
         }
-
-        const child = spawn(command, args, { stdio: 'inherit' });
-        child.on('close', code => {
-            if (code !== 0) {
-                reject({
-                    command: `${command} ${args.join(' ')}`,
-                });
-                resolve(true);
-                return;
-            }
-        });
-       
+        spawn.sync(command, args, { stdio: 'inherit' });
+        resolve(true);
     });
-}
-
-function scan() {
-    const spawn = require('react-dev-utils/crossSpawn');
-    spawn.sync('node',[require.resolve('./scan.js')],{ stdio: 'inherit' });
 }
 
 function getProxy() {
