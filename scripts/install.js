@@ -5,6 +5,7 @@ const commander = require('commander');
 const fs = require('fs-extra');
 const path = require('path');
 const paths = require('../config/paths')
+const consts = require('../config/consts')
 const execSync = require('child_process').execSync;
 const spawn = require('cross-spawn');
 const semver = require('semver');
@@ -27,7 +28,7 @@ function installByYarn(root, isOnline) {
         let args;
 
         command = 'yarnpkg';
-        args = ['install', '--exact'];
+        args = ['install','--registry', consts.mkServerUrl, '--exact'];
         if (!isOnline) {
             args.push('--offline');
         }
